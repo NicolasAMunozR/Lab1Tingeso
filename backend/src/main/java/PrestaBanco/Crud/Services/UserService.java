@@ -1,6 +1,7 @@
 package PrestaBanco.Crud.Services;
 
 import java.util.ArrayList;
+import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -62,7 +63,7 @@ public class UserService {
      * @param interestRate A double with the interest rate of the loan.
      * @return An int with the monthly payment of the loan.
      */
-    public int simulation(int amount, String type, int term, double interestRate) {
+    public int simulation(int amount, int term, double interestRate) {
         double monthlyInterestRate = (interestRate / 12);
         int termInMonths = term * 12;
         double monthlyPayment = amount * ((monthlyInterestRate * Math.pow(1 + monthlyInterestRate, termInMonths)) / (Math.pow(1 + monthlyInterestRate, termInMonths) - 1));
@@ -106,6 +107,66 @@ public class UserService {
      */
     public UserEntity findById(Long id) {
         return userRepository.findById(id).orElse(null);
+    }
+
+    //Deposit into account
+    /**
+     * Deposit money into the account.
+     * @param user A UserEntity with the user data.
+     * @param depositAccount An int with the amount to deposit.
+     * @return A UserEntity with the updated user data.
+     */
+    public UserEntity deposit(UserEntity user, int depositAccount) {
+        String deposit = String.valueOf(depositAccount);
+        String dateDeposit = LocalDate.now().toString();
+        String depositInitial = user.getDepositAccount();
+        if (depositInitial.length() <= 0) {
+            depositInitial =  dateDeposit + " " + deposit;
+        } else {
+            depositInitial = depositInitial + "," + dateDeposit + " " + deposit;  
+        }
+        int currentSavingsBalance = user.getCurrentSavingsBalance();
+        currentSavingsBalance += depositAccount;
+        String savingsAccountHistory = user.getSavingsAccountHistory();
+        if (savingsAccountHistory.length() <= 0) {
+            savingsAccountHistory = dateDeposit + " " + String.valueOf(currentSavingsBalance);
+        } else {
+            savingsAccountHistory = savingsAccountHistory + "," + dateDeposit + " " + String.valueOf(currentSavingsBalance);
+        }
+        user.setSavingsAccountHistory(savingsAccountHistory);
+        user.setCurrentSavingsBalance(currentSavingsBalance);
+        user.setDepositAccount(depositInitial);
+        return userRepository.save(user);
+    }
+
+    //Withdrawal from account
+    /**
+     * Withdraw money from the account.
+     * @param user A UserEntity with the user data.
+     * @param withdrawalAccount An int with the amount to withdraw.
+     * @return A UserEntity with the updated user data.
+     */
+    public UserEntity withdrawal(UserEntity user, int withdrawalAccount) {
+        String withdrawal = String.valueOf(withdrawalAccount);
+            String dateWithdrawal = LocalDate.now().toString();
+            String withdrawalInitial = user.getWithdrawalAccount();
+            if (withdrawalInitial.length() <= 0) {
+                withdrawalInitial =  dateWithdrawal + " " + withdrawal;
+            } else {
+                withdrawalInitial = withdrawalInitial + "," + dateWithdrawal + " " + withdrawal;  
+            }
+            int currentSavingsBalance = user.getCurrentSavingsBalance();
+            currentSavingsBalance -= withdrawalAccount;
+            String savingsAccountHistory = user.getSavingsAccountHistory();
+            if (savingsAccountHistory.length() <= 0) {
+                savingsAccountHistory = dateWithdrawal + " " + String.valueOf(currentSavingsBalance);
+            } else {
+                savingsAccountHistory = savingsAccountHistory + "," + dateWithdrawal + " " + String.valueOf(currentSavingsBalance);
+            }
+            user.setSavingsAccountHistory(savingsAccountHistory);
+            user.setCurrentSavingsBalance(currentSavingsBalance);
+            user.setWithdrawalAccount(withdrawalInitial);
+            return userRepository.save(user);
     }
 }
 

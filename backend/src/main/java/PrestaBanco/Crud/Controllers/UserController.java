@@ -1,5 +1,7 @@
 package PrestaBanco.Crud.Controllers;
 
+import java.time.LocalDate;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -72,14 +74,21 @@ public class UserController {
                             @RequestParam("identifyingDocument") String identifyingDocument, 
                             @RequestParam("name") String name, 
                             @RequestParam("email") String email, 
-                            @RequestParam("password") String password){
+                            @RequestParam("password") String password,
+                            @RequestParam("jobSeniority") int jobSeniority,
+                            @RequestParam("birthdate") LocalDate birthdate) {
         try {
             String filename = file.getOriginalFilename();
             // If the file is a PDF, the client is saved in the database.
             if (filename != null && filename.toLowerCase().endsWith(".pdf")) {
                 // The file is converted to bytes.
                 byte[] pdfBytes = file.getBytes();
-                UserEntity user = new UserEntity(identifyingDocument, name, email, password, pdfBytes);
+                UserEntity user = new UserEntity(identifyingDocument, name, email, password, pdfBytes, jobSeniority, birthdate);
+                user.setCreationDate(LocalDate.now());
+                user.setCurrentSavingsBalance(0);
+                user.setSavingsAccountHistory("");
+                user.setDepositAccount(""); 
+                user.setWithdrawalAccount("");
                 userService.saveUser(user);
                 // The user is saved in the database.
                 return ResponseEntity.ok(user);
@@ -152,17 +161,53 @@ public class UserController {
         try {
             // The amount of the loan is obtained.
             int amount = Integer.parseInt(body.get("amount"));
-            // The type of loan is obtained.
-            String type = body.get("type");
             // The term of the loan is obtained.
             int term = Integer.parseInt(body.get("term"));
             // The interest rate of the loan is obtained.
             double interestRate = Double.parseDouble(body.get("interestRate"));
             // The monthly payment of the loan is calculated.
-            return userService.simulation(amount, type, term, interestRate);
+            return userService.simulation(amount, term, interestRate);
         } catch (Exception e) {
             // If there is an error, return 0.
             return 0;
+        }
+    }
+
+    // Deposit into account
+    /**
+     * Controller that allows depositing money into a client's account.
+     * @param id A Long with the client's id to deposit money.
+     * @param body A Map with the data of the deposit to make.
+     * @return A UserEntity with the client's data updated.
+     */
+    @PutMapping("/deposit/{id}")
+    public ResponseEntity<UserEntity> deposit(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        try {
+            UserEntity user = userService.findUserById(id);
+            int depositAccount = Integer.parseInt(body.get("depositAccount"));
+            UserEntity userModify = userService.deposit(user, depositAccount);
+            return ResponseEntity.ok(userModify);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    // Withdrawal from account
+    /**
+     * Controller that allows withdrawing money from a client's account.
+     * @param id A Long with the client's id to withdraw money.
+     * @param body A Map with the data of the withdrawal to make.
+     * @return A UserEntity with the client's data updated.
+     */
+    @PutMapping("/withdrawal/{id}")
+    public ResponseEntity<UserEntity> withdrawal(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        try {
+            UserEntity user = userService.findUserById(id);
+            int withdrawalAccount = Integer.parseInt(body.get("withdrawalAccount"));
+            UserEntity userModify = userService.withdrawal(user, withdrawalAccount);
+            return ResponseEntity.ok(userModify);
+        } catch (Exception e) {
+            return null;
         }
     }
 }
