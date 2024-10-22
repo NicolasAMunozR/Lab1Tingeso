@@ -523,7 +523,7 @@ public class CreditService {
         double monthlyCost = averageIncome + lienInsurance + 20000;
         credit.setRemainingMonthlyInstallments((int)monthlyCost);
         credit.setFirstInstallment((int)(monthlyCost + administrationFee));
-        credit.setTotalAmount((int)(monthlyCost * credit.getLoanTerm() * 12 + administrationFee));
+        credit.setrequestedAmount((int)(monthlyCost * credit.getLoanTerm() * 12 + administrationFee));
     }
 
     // Disbursement
@@ -534,9 +534,9 @@ public class CreditService {
     public void Disbursement(CreditEntity credit) {
         UserEntity user = userService.findById(credit.getUserId());
         int currentSavingsBalance = user.getCurrentSavingsBalance();
-        int totalAmount = credit.getTotalAmount();
-        user.setCurrentSavingsBalance(currentSavingsBalance + totalAmount);
-        String deposit = String.valueOf(totalAmount);
+        int requestedAmount = credit.getRequestedAmount();
+        user.setCurrentSavingsBalance(currentSavingsBalance + requestedAmount);
+        String deposit = String.valueOf(requestedAmount);
         String dateDeposit = LocalDate.now().toString();
         String depositInitial = user.getDepositAccount();
         if (depositInitial.length() <= 0) {
@@ -544,7 +544,7 @@ public class CreditService {
         } else {
             depositInitial = depositInitial + "," + dateDeposit + " " + deposit;  
         }
-        currentSavingsBalance += totalAmount;
+        currentSavingsBalance += requestedAmount;
         String savingsAccountHistory = user.getSavingsAccountHistory();
         if (savingsAccountHistory.length() <= 0) {
             savingsAccountHistory = dateDeposit + " " + String.valueOf(currentSavingsBalance);
