@@ -1,19 +1,14 @@
 package PrestaBanco.Crud.Controllers;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import PrestaBanco.Crud.Entities.CreditEntity;
 import PrestaBanco.Crud.Services.CreditService;
-
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping("/credits")
@@ -22,6 +17,7 @@ public class CreditController {
     
     @Autowired
     private CreditService creditService;
+    
     // Credit application
     /**
      * Controller that allows applying for a loan.
@@ -29,9 +25,9 @@ public class CreditController {
      * @param body A Map with the data of the loan to apply for.
      * @return A UserEntity with the client's data updated.
      */
-    @PostMapping(value = "/{id}", consumes = {"multipart/form-data"})
-    public ResponseEntity<CreditEntity> applyForCredit(@PathVariable Long id,
-    @RequestParam("proofOfIncome") MultipartFile file,
+    @PostMapping(value = "/", consumes = {"multipart/form-data"})
+    public ResponseEntity<CreditEntity> applyForCredit(@RequestParam("userId") Long id,
+    @RequestParam(value = "proofOfIncome", required = false) MultipartFile file,
     @RequestParam(value = "appraisalCertificate", required = false) MultipartFile file2,
     @RequestParam(value = "creditHistory", required = false) MultipartFile file3,
     @RequestParam(value = "deedOfTheFirstHome", required = false) MultipartFile file4,
@@ -61,7 +57,10 @@ public class CreditController {
         try {
             String monthlyIncome = monthlyIncome1 + "," + monthlyIncome2 + "," + monthlyIncome3 + "," + monthlyIncome4 + "," + monthlyIncome5 + "," + monthlyIncome6 + "," + monthlyIncome7 + "," + monthlyIncome8 + "," + monthlyIncome9 + "," + monthlyIncome10 + "," + monthlyIncome11 + "," + monthlyIncome12;
             CreditEntity credit = new CreditEntity(id, monthlyIncome, requestedAmount, loanTerm, annualInterestRate, typeOfLoan, creditsHistory, monthlyDebt, propertyAmount);
-            byte[] pdfBytes = file.getBytes();
+            byte[] pdfBytes = null;
+            if (file != null && !file.isEmpty()) {
+                pdfBytes = file.getBytes();
+            }
             credit.setProofOfIncome(pdfBytes);
             byte[] pdfBytes2 = null;
             if (file2 != null && !file2.isEmpty()) {
@@ -99,7 +98,7 @@ public class CreditController {
             }
             credit.setCreditsHistory(creditsHistory);
             credit.setUpdatedAppraisalCertificate(pdfBytes8);
-            credit.setAppraisalCertificate(pdfBytes2);
+    
             CreditEntity creditSaved = creditService.applicationStatus(credit);
             return ResponseEntity.ok(creditSaved);
         } catch (Exception e) {
@@ -137,11 +136,22 @@ public class CreditController {
             CreditEntity credit = creditService.findById(id);
             if (credit.getApplicationStatus().equals("En evaluación")) {
                 credit.setApplicationStatus("Pre-aprobado");
-            CreditEntity creditSaved = creditService.saveCredit(credit);
-            return ResponseEntity.ok(creditSaved);
-            } else {
+            } 
+            else if (credit.getApplicationStatus().equals("Pre-aprobado")) {
+                credit.setApplicationStatus("Aprobación final");
+            }
+            else if (credit.getApplicationStatus().equals("Aprobación final")) {
+                credit.setApplicationStatus("Aprobada");
+            }
+            else if (credit.getApplicationStatus().equals("Aprobada")) {
+                credit.setApplicationStatus("Desembolso");
+                creditService.Disbursement(credit);
+            }
+            else {
                 return null; 
             }
+            CreditEntity creditSaved = creditService.saveCredit(credit);
+            return ResponseEntity.ok(creditSaved);
         }
         catch (Exception e) {
             return null;
@@ -173,28 +183,6 @@ public class CreditController {
         }
     }
 
-    // Accept terms
-    /**
-     * Method that allows accepting the terms of a loan.
-     * @param id A Long with the id of the loan to accept.
-     * @return A CreditEntity with the loan accepted.
-     */
-    @PutMapping("/acceptTerms/{id}")
-    public ResponseEntity<CreditEntity> acceptTerms(@PathVariable Long id) {
-        try{
-            CreditEntity credit = creditService.findById(id);
-            if (credit.getApplicationStatus().equals("Pre-aprobado")) {
-                credit.setApplicationStatus("Aprobación final");
-                CreditEntity creditSaved = creditService.saveCredit(credit);
-                return ResponseEntity.ok(creditSaved);
-            }
-            return null;
-        }
-        catch (Exception e) {
-            return null;
-        }
-    }
-
     // Rejection of terms
     /**
      * Method that allows rejecting the terms of a loan.
@@ -214,50 +202,14 @@ public class CreditController {
         }
     }
 
-    // Confirmation sent
+    //Obtener creditos todos
     /**
-     * Method that allows sending the confirmation of a loan.
-     * @param id A Long with the id of the loan to send the confirmation.
-     * @return A CreditEntity with the loan confirmed.
+     * Controller that allows obtaining all the loans.
+     * @return A List with all the loans.
      */
-    @PutMapping("/confirmationSent/{id}")
-    public ResponseEntity<CreditEntity> confirmationSent(@PathVariable Long id) {
-        try{
-            CreditEntity credit = creditService.findById(id);
-            if (credit.getApplicationStatus().equals("Aprobación final")) {
-                credit.setApplicationStatus("Aprobada");
-                CreditEntity creditSaved = creditService.saveCredit(credit);
-                return ResponseEntity.ok(creditSaved);
-            }
-            return null;
-        }
-        catch (Exception e) {
-            return null;
-        }
-    }
-
-    // Disbursement
-    /**
-     * Method that allows disbursing a loan.
-     * @param id A Long with the id of the loan to disburse.
-     * @return A CreditEntity with the loan disbursed.
-     */
-    @PutMapping("/disbursement/{id}")
-    public ResponseEntity<CreditEntity> disbursement(@PathVariable Long id) {
-        try{
-            CreditEntity credit = creditService.findById(id);
-            if (credit.getApplicationStatus().equals("Aprobada")) {
-                credit.setApplicationStatus("Desembolso");
-                creditService.Disbursement(credit);
-                CreditEntity creditSaved = creditService.saveCredit(credit);
-                return ResponseEntity.ok(creditSaved);
-            } else {
-                return null;
-                
-            }
-        }
-        catch (Exception e) {
-            return null;
-        }
+    @GetMapping("/all")
+    public ResponseEntity<List<CreditEntity>> getAllCredits() {
+        List<CreditEntity> credits = creditService.getAllCredits();
+        return ResponseEntity.ok(credits);
     }
 }

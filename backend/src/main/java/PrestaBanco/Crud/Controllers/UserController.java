@@ -152,12 +152,12 @@ public class UserController {
 
     //User Mortgage Credit Simulation
     /**
-     * Controller that allows simulating a mortgage loan.
-     * @param body A Map with the data of the loan to simulate.
-     * @return An int with the monthly payment of the loan.
+     * Controller that allows simulating a mortgage credit for a client.
+     * @param body A Map with the data of the mortgage credit to simulate.
+     * @return An Integer with the monthly payment of the mortgage credit.
      */
-    @GetMapping("/simulation")
-    public int simulation(@RequestBody Map<String, String> body) {
+    @PostMapping("/simulation")
+    public ResponseEntity<Integer> simulation(@RequestBody Map<String, String> body) {
         try {
             // The amount of the loan is obtained.
             int amount = Integer.parseInt(body.get("amount"));
@@ -166,10 +166,12 @@ public class UserController {
             // The interest rate of the loan is obtained.
             double interestRate = Double.parseDouble(body.get("interestRate"));
             // The monthly payment of the loan is calculated.
-            return userService.simulation(amount, term, interestRate);
+            int monthlyPayment = userService.simulation(amount, term, interestRate);
+            // The monthly payment of the loan is returned.
+            return ResponseEntity.ok(monthlyPayment);
         } catch (Exception e) {
             // If there is an error, return 0.
-            return 0;
+            return null;
         }
     }
 
@@ -207,6 +209,25 @@ public class UserController {
             UserEntity userModify = userService.withdrawal(user, withdrawalAccount);
             return ResponseEntity.ok(userModify);
         } catch (Exception e) {
+            return null;
+        }
+    }
+
+    //encontrar nombre por id
+    /**
+     * Controller that allows finding a client's name by id.
+     * @param id A Long with the client's id to find the name.
+     * @return A String with the client's name found.
+     */
+    @GetMapping("/users/name/{id}")
+    public ResponseEntity<String> findNameById(@PathVariable Long id) {
+        try {
+            // The user is searched in the database.
+            UserEntity user = userService.findUserById(id);
+            // The user's name is returned.
+            return ResponseEntity.ok(user.getName());
+        } catch (Exception e) {
+            // If the user is not found, return null.
             return null;
         }
     }

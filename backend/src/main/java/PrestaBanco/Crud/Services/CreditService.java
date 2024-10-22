@@ -14,7 +14,9 @@ import PrestaBanco.Crud.Entities.CreditEntity;
 import PrestaBanco.Crud.Entities.UserEntity;
 import PrestaBanco.Crud.Repositories.CreditRepository;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 @Service
 public class CreditService {
@@ -24,6 +26,12 @@ public class CreditService {
 
     @Autowired
     private UserService userService;
+
+
+    public CreditService() {
+        // Asegúrate de crear una nueva instancia de UserService aquí
+        this.userService = new UserService();  // Inicialización de UserService
+    }
 
     //Create a new credit
     /**
@@ -67,6 +75,9 @@ public class CreditService {
             } else {
                 credit.setApplicationStatus("Pendiente de documentación"); 
             }
+        }
+        else {
+            return null;
         }
         return creditRepository.save(credit);
     }
@@ -114,40 +125,51 @@ public class CreditService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         String[] entries = monthlyIncome.split(",");
         Map<LocalDate, Integer> incomePerMonth = new HashMap<>();
-        
+
         for (String entry : entries) {
             String[] parts = entry.split(" ");
+            if (parts.length != 2) {
+                System.err.println("Invalid format for entry: " + entry);
+                continue; // Skip malformed entries
+            }
+
             String dateString = parts[0].trim(); // Eliminar espacios en blanco
-            int amount = Integer.parseInt(parts[1]);
-    
+            int amount = 0;
+            try {
+                amount = Integer.parseInt(parts[1]); // Parse the amount
+            } catch (NumberFormatException e) {
+                System.err.println("Error parsing amount: " + parts[1] + " - " + e.getMessage());
+                continue; // Skip invalid amounts
+            }
+
             try {
                 // Parse the date
                 LocalDate date = LocalDate.parse(dateString, formatter);
-    
                 // Store the date and amount in the map
                 incomePerMonth.put(date, amount);
             } catch (DateTimeParseException e) {
                 System.err.println("Error parsing date: " + dateString + " - " + e.getMessage());
             }
         }
-    
+
         LocalDate currentDate = LocalDate.now();
         int totalIncome = 0;
         int countedMonths = 0;
-    
+
         for (Map.Entry<LocalDate, Integer> entry : incomePerMonth.entrySet()) {
             LocalDate date = entry.getKey();
-    
+
             // Check if the date is within the last 12 months
             if (!date.isBefore(currentDate.minusMonths(12))) {
                 totalIncome += entry.getValue();
                 countedMonths++;
             }
         }
-    
+
         // Avoid division by zero
         return countedMonths > 0 ? (double) totalIncome / countedMonths : 0;
     }
+
 
     // Evaluate credit
     /**
@@ -162,9 +184,6 @@ public class CreditService {
         int monthlyFee = userService.simulation(amount1, term, annualInterestRate);
         double averageIncome = averageIncome(creditFound);
         double FeeIncomeRatio = ((double) monthlyFee / averageIncome) * 100;
-        System.out.println(FeeIncomeRatio);
-        System.out.println(averageIncome);
-        System.out.println(monthlyFee);
         if (FeeIncomeRatio <= 0.35) {
             return true;
         }
@@ -176,10 +195,11 @@ public class CreditService {
      * Method that allows evaluating a loan.
      * @param credit A CreditEntity with the data of the loan to evaluate.
      * @return A Boolean with the result of the loan evaluation.
-     */
+     * * */
     public Boolean R2(CreditEntity creditFound) {
-        return creditFound.getCreditsHistory();
+        return creditFound.getCreditsHistory() != null ? creditFound.getCreditsHistory() : false;
     }
+
 
     // Evaluate credit
     /**
@@ -190,7 +210,7 @@ public class CreditService {
     public Boolean R3(CreditEntity creditFound) {
         UserEntity user = userService.findById(creditFound.getUserId());
         Integer jobSeniority = user.getJobSeniority();
-        if (jobSeniority == null || jobSeniority >= 1) {
+        if (jobSeniority >= 1) {
             return true;
         }
         return false;
@@ -204,18 +224,23 @@ public class CreditService {
      */
     public Boolean R4(CreditEntity creditFound) {
         String debt = creditFound.getMonthlyDebt();
-        String[] parts = debt.split(",");
-        
-        int sum = 0;
+        if(debt != null){
+            String[] parts = debt.split(",");
 
-        for (String part : parts) {
-            sum += Integer.parseInt(part); 
+            int sum = 0;
+
+            for (String part : parts) {
+                sum += Integer.parseInt(part);
+            }
+            sum += userService.simulation(creditFound.getRequestedAmount(), creditFound.getLoanTerm(), creditFound.getAnnualInterestRate());
+            if (sum > (0.5 * averageIncome(creditFound))) {
+                return false;
+            }
+            return true;
         }
-        sum += userService.simulation(creditFound.getRequestedAmount(), creditFound.getLoanTerm(), creditFound.getAnnualInterestRate());
-        if (sum > (0.5 * averageIncome(creditFound))) {
+        else {
             return false;
         }
-        return true;
     }
 
     // Evaluate credit
@@ -529,6 +554,10 @@ public class CreditService {
         user.setSavingsAccountHistory(savingsAccountHistory);
         user.setDepositAccount(depositInitial);
         userService.saveUser(user);
+    }
+
+    public ArrayList<CreditEntity> getAllCredits() {
+        return (ArrayList<CreditEntity>) creditRepository.findAll();
     }
 
 }
