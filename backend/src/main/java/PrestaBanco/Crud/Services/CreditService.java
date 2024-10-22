@@ -560,4 +560,13 @@ public class CreditService {
         return (ArrayList<CreditEntity>) creditRepository.findAll();
     }
 
+    public void deleted(UserEntity user) {
+        ArrayList<CreditEntity> credits = (ArrayList<CreditEntity>) creditRepository.findAll();
+        for (CreditEntity credit : credits) {
+            if (credit.getUserId() == user.getId()) {
+                creditRepository.delete(credit);
+            }
+        }
+    }
+
 }

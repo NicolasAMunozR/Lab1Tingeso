@@ -16,8 +16,12 @@ const updateStatus = id => {
     return httpClient.put(`/credits/updateStatus/${id}`);
 }
 
-const updateTerms = (id, lienInsurance, administrtionFee) => {
-    return httpClient.put(`/credits/updateTerms/${id}`, {params: {lienInsurance, administrtionFee}});
+const updateTerms = (formData) => {
+    return httpClient.put("/credits/updateTerms", formData, {
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+    });
 }
 
 const rejectTerms = id => {

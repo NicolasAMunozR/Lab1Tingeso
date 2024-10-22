@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
+import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import creditService from "../services/credit.service";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import FormControl from "@mui/material/FormControl";
 import SaveIcon from "@mui/icons-material/Save";
 import dayjs from "dayjs";
 
@@ -115,7 +115,7 @@ const AddCredit = () => {
                     <FormControl fullWidth key={index}>
                         <TextField
                             id={`monthlyIncome${index + 1}`}
-                            label={`Monthly Income ${index + 1}`}
+                            label={`Ingreso de los ultimos meses: ${index + 1}`}
                             value={income.split(" ")[1]} // Solo mostrar la cantidad
                             variant="standard"
                             onChange={(e) => handleIncomeChange(index, e.target.value)}
@@ -126,7 +126,7 @@ const AddCredit = () => {
                 <FormControl fullWidth>
                     <TextField
                         id="requestedAmount"
-                        label="Requested Amount"
+                        label="Monto solicitado"
                         value={requestedAmount}
                         variant="standard"
                         onChange={(e) => setRequestedAmount(e.target.value)}
@@ -136,7 +136,7 @@ const AddCredit = () => {
                 <FormControl fullWidth>
                     <TextField
                         id="loanTerm"
-                        label="Loan Term"
+                        label="Plazo del préstamo en años"
                         value={loanTerm}
                         variant="standard"
                         onChange={(e) => setLoanTerm(e.target.value)}
@@ -146,37 +146,43 @@ const AddCredit = () => {
                 <FormControl fullWidth>
                     <TextField
                         id="annualInterestRate"
-                        label="Annual Interest Rate"
+                        label="Tasa de interés anual"
                         value={annualInterestRate}
                         variant="standard"
                         onChange={(e) => setAnnualInterestRate(e.target.value)}
                     />
                 </FormControl>
 
-                <FormControl fullWidth>
-                    <TextField
+                <FormControl fullWidth variant="standard">
+                    <InputLabel id="credits-history-label">Historial de créditos</InputLabel>
+                    <Select
+                        labelId="credits-history-label"
                         id="creditsHistory"
-                        label="Credits History"
-                        value={creditsHistory}
-                        variant="standard"
-                        onChange={(e) => setCreditsHistory(e.target.value)}
-                    />
+                        value={creditsHistory ? 'Sí' : 'No'}
+                        onChange={(e) => setCreditsHistory(e.target.value === 'Sí')}
+                        displayEmpty
+                        sx={{ textAlign: 'left' }} // Alineación a la izquierda
+                    >
+                        <MenuItem value="Sí">Sí</MenuItem>
+                        <MenuItem value="No">No</MenuItem>
+                    </Select>
                 </FormControl>
 
                 <FormControl fullWidth>
                     <TextField
                         id="monthlyDebt"
-                        label="Monthly Debt"
+                        label="Deuda Mensual"
                         value={monthlyDebt}
                         variant="standard"
                         onChange={(e) => setMonthlyDebt(e.target.value)}
+                        helperText="Ej. 200000 o 200,1000,20000" 
                     />
                 </FormControl>
 
                 <FormControl fullWidth>
                     <TextField
                         id="propertyAmount"
-                        label="Property Amount"
+                        label="Monto de la propiedad"
                         value={propertyAmount}
                         variant="standard"
                         onChange={(e) => setPropertyAmount(e.target.value)}
@@ -186,7 +192,7 @@ const AddCredit = () => {
                 <FormControl fullWidth>
                     <TextField
                         id="typeOfLoan"
-                        label="Type Of Loan"
+                        label="Tipo de préstamo"
                         value={typeOfLoan}
                         variant="standard"
                         onChange={(e) => setTypeOfLoan(e.target.value)}
@@ -197,19 +203,19 @@ const AddCredit = () => {
                         <>
                             <FormControl fullWidth>
                                 <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                                    <label htmlFor="proofOfIncome" style={{ marginRight: "20px", minWidth: "150px", textAlign: "left" }}>Proof of Income</label>
+                                    <label htmlFor="proofOfIncome" style={{ marginRight: "20px", minWidth: "150px", textAlign: "left" }}>Comprobante de ingresos</label>
                                 </Box>
                                 <input type="file" id="proofOfIncome" onChange={(e) => setProofOfIncome(e.target.files[0])} />
                             </FormControl>
                             <FormControl fullWidth>
                                 <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                                    <label htmlFor="appraisalCertificate">Appraisal Certificate</label>
+                                    <label htmlFor="appraisalCertificate">Certificado de avalúo</label>
                                 </Box>
                                 <input type="file" id="appraisalCertificate" onChange={(e) => setAppraisalCertificate(e.target.files[0])} />
                             </FormControl>
                             <FormControl fullWidth>
                                 <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                                    <label htmlFor="creditHistory">Credit History</label>
+                                    <label htmlFor="creditHistory">Historial crediticio</label>
                                 </Box>
                                 <input type="file" id="creditHistory" onChange={(e) => setCreditHistory(e.target.files[0])} />
                             </FormControl>
@@ -220,25 +226,25 @@ const AddCredit = () => {
                         <>
                             <FormControl fullWidth>
                                 <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                                    <label htmlFor="proofOfIncome">Proof of Income</label>
+                                    <label htmlFor="proofOfIncome">Comprobante de ingresos</label>
                                 </Box>
                                 <input type="file" id="proofOfIncome" onChange={(e) => setProofOfIncome(e.target.files[0])} />
                             </FormControl>
                             <FormControl fullWidth>
                                 <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                                    <label htmlFor="appraisalCertificate">Appraisal Certificate</label>
+                                    <label htmlFor="appraisalCertificate">Certificado de avalúo</label>
                                 </Box>
                                 <input type="file" id="appraisalCertificate" onChange={(e) => setAppraisalCertificate(e.target.files[0])} />
                             </FormControl>
                             <FormControl fullWidth>
                                 <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                                    <label htmlFor="deedOfTheFirstHome">Deed of the First Home</label>
+                                    <label htmlFor="deedOfTheFirstHome">Escritura de la primera vivienda</label>
                                 </Box>
                                 <input type="file" id="deedOfTheFirstHome" onChange={(e) => setDeedOfTheFirstHome(e.target.files[0])} />
                             </FormControl>
                             <FormControl fullWidth>
                                 <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                                    <label htmlFor="creditHistory">Credit History</label>
+                                    <label htmlFor="creditHistory">Historial crediticio</label>
                                 </Box>
                                 <input type="file" id="creditHistory" onChange={(e) => setCreditHistory(e.target.files[0])} />
                             </FormControl>
@@ -249,25 +255,25 @@ const AddCredit = () => {
                         <>
                             <FormControl fullWidth>
                                 <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                                    <label htmlFor="proofOfIncome">Proof of Income</label>
+                                    <label htmlFor="proofOfIncome">Comprobante de ingresos</label>
                                 </Box>
                                 <input type="file" id="proofOfIncome" onChange={(e) => setProofOfIncome(e.target.files[0])} />
                             </FormControl>
                             <FormControl fullWidth>
                                 <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                                    <label htmlFor="appraisalCertificate">Appraisal Certificate</label>
+                                    <label htmlFor="appraisalCertificate">Certificado de avalúo</label>
                                 </Box>
                                 <input type="file" id="appraisalCertificate" onChange={(e) => setAppraisalCertificate(e.target.files[0])} />
                             </FormControl>
                             <FormControl fullWidth>
                                 <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                                    <label htmlFor="financialStatusOfTheBusiness">Financial Status of the Business</label>
+                                    <label htmlFor="financialStatusOfTheBusiness">Estado financiero del negocio</label>
                                 </Box>
                                 <input type="file" id="financialStatusOfTheBusiness" onChange={(e) => setFinancialStatusOfTheBusiness(e.target.files[0])} />
                             </FormControl>
                             <FormControl fullWidth>
                                 <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                                    <label htmlFor="businessPlan">Business Plan</label>
+                                    <label htmlFor="businessPlan">Plan de negocios</label>
                                 </Box>
                                 <input type="file" id="businessPlan" onChange={(e) => setBusinessPlan(e.target.files[0])} />
                             </FormControl>
@@ -278,19 +284,19 @@ const AddCredit = () => {
                         <>
                             <FormControl fullWidth>
                                 <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                                    <label htmlFor="proofOfIncome">Proof of Income</label>
+                                    <label htmlFor="proofOfIncome">Comprobante de ingresos</label>
                                 </Box>
                                 <input type="file" id="proofOfIncome" onChange={(e) => setProofOfIncome(e.target.files[0])} />
                             </FormControl>
                             <FormControl fullWidth>
                                 <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                                    <label htmlFor="updatedAppraisalCertificate">Updated Appraisal Certificate</label>
+                                    <label htmlFor="updatedAppraisalCertificate">Certificado de avalúo actualizado</label>
                                 </Box>
                                 <input type="file" id="updatedAppraisalCertificate" onChange={(e) => setUpdatedAppraisalCertificate(e.target.files[0])} />
                             </FormControl>
                             <FormControl fullWidth>
                                 <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                                    <label htmlFor="remodelingBudget">Remodeling Budget</label>
+                                    <label htmlFor="remodelingBudget">Presupuesto de la remodelación</label>
                                 </Box>
                                 <input type="file" id="remodelingBudget" onChange={(e) => setRemodelingBudget(e.target.files[0])} />
                             </FormControl>

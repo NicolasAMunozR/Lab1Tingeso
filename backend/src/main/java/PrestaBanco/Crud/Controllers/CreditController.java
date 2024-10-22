@@ -134,9 +134,12 @@ public class CreditController {
     public ResponseEntity<CreditEntity> updateStatus(@PathVariable Long id) {
         try{
             CreditEntity credit = creditService.findById(id);
-            if (credit.getApplicationStatus().equals("En evaluación")) {
+            if(credit.getApplicationStatus().equals("Pendiente de documentación")) {
+                credit.setApplicationStatus("En evaluación");
+            }
+            else if(credit.getApplicationStatus().equals("En evaluación")) {
                 credit.setApplicationStatus("Pre-aprobado");
-            } 
+            }
             else if (credit.getApplicationStatus().equals("Pre-aprobado")) {
                 credit.setApplicationStatus("Aprobación final");
             }
@@ -148,7 +151,7 @@ public class CreditController {
                 creditService.Disbursement(credit);
             }
             else {
-                return null; 
+                return null;
             }
             CreditEntity creditSaved = creditService.saveCredit(credit);
             return ResponseEntity.ok(creditSaved);
@@ -166,8 +169,8 @@ public class CreditController {
      * @param administrationFee A Double with the administration fee of the loan.
      * @return A CreditEntity with the loan updated.
      */
-    @PutMapping("/updateTerms/{id}")
-    public ResponseEntity<CreditEntity> updateTerms(@PathVariable Long id, 
+    @PutMapping("/updateTerms")
+    public ResponseEntity<CreditEntity> updateTerms(@RequestParam("userId") Long id,
     @RequestParam("lienInsurance") Double lienInsurance,
     @RequestParam("administrationFee") Double administrationFee) {
         try{

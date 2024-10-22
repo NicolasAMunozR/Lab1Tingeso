@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import userService from "../services/user.service";
 import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
@@ -8,9 +8,9 @@ import FormControl from "@mui/material/FormControl";
 import SaveIcon from "@mui/icons-material/Save";
 
 const SimulationCredit = () => {
-  const [amount, setamount] = useState("");
-  const [term, setterm] = useState("");
-  const [interestRate, setinterestRate] = useState("");
+  const [amount, setAmount] = useState("");
+  const [term, setTerm] = useState("");
+  const [interestRate, setInterestRate] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
 
@@ -19,20 +19,33 @@ const SimulationCredit = () => {
     setError('');
     setResult(null);
 
-    try {
-        const response = await userService.simulation({
-            amount,
-            term,
-            interestRate,
-        });
-
-        setResult(response.data);
-    } catch (err) {
-        setError('Error al simular el préstamo.');
+    // Validación de campos vacíos
+    if (!amount || !term || !interestRate) {
+      setError('Todos los campos son obligatorios.');
+      return;
     }
-};
+
+    // Validación de datos (puedes agregar más condiciones según sea necesario)
+    if (isNaN(amount) || isNaN(term) || isNaN(interestRate)) {
+      setError('Por favor, introduce valores numéricos válidos.');
+      return;
+    }
+
+    try {
+      const response = await userService.simulation({
+        amount,
+        term,
+        interestRate,
+      });
+
+      setResult(response.data);
+    } catch (err) {
+      setError('Error al simular el préstamo.');
+    }
+  };
 
   useEffect(() => {
+    // Aquí puedes hacer cualquier inicialización que necesites
   }, []);
 
   return (
@@ -48,31 +61,36 @@ const SimulationCredit = () => {
         <FormControl fullWidth>
           <TextField
             id="amount"
-            label="amount"
+            label="Cantidad"
             value={amount}
             variant="standard"
-            onChange={(e) => setamount(e.target.value)}
-            helperText="Ej. 12.587.698-8"
+            onChange={(e) => setAmount(e.target.value)}
+            error={!!error}
+            helperText={error && error}
           />
         </FormControl>
 
         <FormControl fullWidth>
           <TextField
             id="term"
-            label="term"
+            label="Plazo"
             value={term}
             variant="standard"
-            onChange={(e) => setterm(e.target.value)}
+            onChange={(e) => setTerm(e.target.value)}
+            error={!!error}
+            helperText={error && error}
           />
         </FormControl>
 
         <FormControl fullWidth>
           <TextField
             id="interestRate"
-            label="interestRate"
+            label="Tasa de interés"
             value={interestRate}
             variant="standard"
-            onChange={(e) => setinterestRate(e.target.value)}
+            onChange={(e) => setInterestRate(e.target.value)}
+            error={!!error}
+            helperText={error && error}
           />
         </FormControl>
 
@@ -88,20 +106,19 @@ const SimulationCredit = () => {
             Grabar
           </Button>
         </FormControl>
-        {result !== null && (
-                <div className="alert alert-success mt-3">
-                    Cuota mensual de su prestamo: {result}
-                </div>
-            )}
 
-            {error && (
-                <div className="alert alert-danger mt-3">
-                    {error}
-                </div>
-            )}
+        {result !== null && (
+          <div className="alert alert-success mt-3">
+            Cantidad de cuotas: {term * 12}
+            <br />
+            Cuota mensual del préstamo: {result}
+            <br />
+            No se incluye ni seguro gravamen, ni la comisión de administración
+          </div>
+        )}
       </form>
       <hr />
-      <Link to="/user/list">Back to List</Link>
+      <Link to="/home">Volver a la lista</Link>
     </Box>
   );
 };

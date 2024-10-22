@@ -1,13 +1,13 @@
 const Home = () => {
   return (
     <div>
-      <h1>SisGR: Sistema de Gestión Remuneraciones</h1>
+      <h1>PrestaBanco: Sistema de Gestión de Préstamos Hipotecarios</h1>
       <p>
-        SisGR es una aplicación web para gestionar planillas de sueldos de
-        empleados. Esta aplicación ha sido desarrollada usando tecnologías como{" "}
+        PrestaBanco es una aplicación web para gestionar los préstamos hipotecarios de los clientes.
+        Esta aplicación ha sido desarrollada usando tecnologías como{" "}
         <a href="https://spring.io/projects/spring-boot">Spring Boot</a> (para
         el backend), <a href="https://reactjs.org/">React</a> (para el Frontend)
-        y <a href="https://www.mysql.com/products/community/">MySQL</a> (para la
+        y <a href="https://www.postgresql.org/community/">PostgreSQL</a> (para la
         base de datos).
       </p>
     </div>

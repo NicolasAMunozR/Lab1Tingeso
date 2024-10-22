@@ -13,7 +13,7 @@ const AddEdituser = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [jobSeniority, setJobSeniority] = useState("");
-  const [birthdate, setBirthdate] = useState("");
+  const [birthdate, setBirthdate] = useState(""); // Almacena la fecha de nacimiento
   const [file, setFile] = useState(null);
 
   const { id } = useParams();
@@ -33,34 +33,35 @@ const AddEdituser = () => {
 
     if (file) {
       formData.append("file", file);
-    }
-
-    if (id) {
-      userService
-        .update(id, formData)
-        .then((response) => {
-          console.log("Empleado ha sido actualizado.", response.data);
-          navigate("/user/list");
-        })
-        .catch((error) => {
-          console.log(
-            "Ha ocurrido un error al intentar actualizar datos del empleado.",
-            error
-          );
-        });
+      if (id) {
+        userService
+          .update(id, formData)
+          .then((response) => {
+            console.log("Empleado ha sido actualizado.", response.data);
+            navigate("/user/list");
+          })
+          .catch((error) => {
+            console.log(
+              "Ha ocurrido un error al intentar actualizar datos del empleado.",
+              error
+            );
+          });
+      } else {
+        userService
+          .create(formData)
+          .then((response) => {
+            console.log("Usuario ha sido añadido.", response.data);
+            navigate("/user/list");
+          })
+          .catch((error) => {
+            console.log(
+              "Ha ocurrido un error al intentar crear nuevo usuario.",
+              error
+            );
+          });
+      }
     } else {
-      userService
-        .create(formData)
-        .then((response) => {
-          console.log("Usuario ha sido añadido.", response.data);
-          navigate("/user/list");
-        })
-        .catch((error) => {
-          console.log(
-            "Ha ocurrido un error al intentar crear nuevo usuario.",
-            error
-          );
-        });
+      alert("Debe adjuntar un archivo");
     }
   };
 
@@ -72,6 +73,10 @@ const AddEdituser = () => {
         .then((user) => {
           setIdentifyingDocument(user.data.identifyingDocument);
           setName(user.data.name);
+          setEmail(user.data.email);
+          setPassword(user.data.password);
+          setJobSeniority(user.data.jobSeniority);
+          setBirthdate(user.data.birthdate); // Carga la fecha de nacimiento si existe
         })
         .catch((error) => {
           console.log("Se ha producido un error.", error);
@@ -89,13 +94,13 @@ const AddEdituser = () => {
       justifyContent="center"
       component="form"
     >
-      <h3> {titleuserForm} </h3>
+      <h3>{titleuserForm}</h3>
       <hr />
       <form>
         <FormControl fullWidth>
           <TextField
             id="identifyingDocument"
-            label="Rut"
+            label="Documento identificativo"
             value={identifyingDocument}
             variant="standard"
             onChange={(e) => setIdentifyingDocument(e.target.value)}
@@ -106,7 +111,7 @@ const AddEdituser = () => {
         <FormControl fullWidth>
           <TextField
             id="name"
-            label="Name"
+            label="Nombre"
             value={name}
             variant="standard"
             onChange={(e) => setName(e.target.value)}
@@ -116,7 +121,7 @@ const AddEdituser = () => {
         <FormControl fullWidth>
           <TextField
             id="email"
-            label="Email"
+            label="Correo"
             value={email}
             variant="standard"
             onChange={(e) => setEmail(e.target.value)}
@@ -126,7 +131,7 @@ const AddEdituser = () => {
         <FormControl fullWidth>
           <TextField
             id="Password"
-            label="Password"
+            label="Contraseña"
             value={password}
             variant="standard"
             type="password"
@@ -137,7 +142,7 @@ const AddEdituser = () => {
         <FormControl fullWidth>
           <TextField
             id="jobSeniority"
-            label="Job Seniority"
+            label="Antigüedad laboral en años"
             value={jobSeniority}
             variant="standard"
             onChange={(e) => setJobSeniority(e.target.value)}
@@ -147,18 +152,22 @@ const AddEdituser = () => {
         <FormControl fullWidth>
           <TextField
             id="birthdate"
-            label="Birthdate"
+            label="Fecha de nacimiento"
+            type="date" // Tipo de campo para seleccionar fecha
             value={birthdate}
             variant="standard"
             onChange={(e) => setBirthdate(e.target.value)}
+            InputLabelProps={{
+              shrink: true,
+            }}
           />
         </FormControl>
 
         <FormControl fullWidth>
           <input
-             type="file"
-             id="file"
-             onChange={(e) => setFile(e.target.files[0])} // Captura el archivo
+            type="file"
+            id="file"
+            onChange={(e) => setFile(e.target.files[0])} // Captura el archivo
           />
         </FormControl>
 
@@ -176,7 +185,7 @@ const AddEdituser = () => {
         </FormControl>
       </form>
       <hr />
-      <Link to="/user/list">Back to List</Link>
+      <Link to="/user/list">Volver a la lista</Link>
     </Box>
   );
 };

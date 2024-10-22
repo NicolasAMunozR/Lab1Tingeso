@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.time.LocalDate;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import PrestaBanco.Crud.Repositories.UserRepository;
@@ -14,6 +15,10 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    @Lazy
+    private CreditService creditService;
 
     //Create a new user
     /**
@@ -48,10 +53,14 @@ public class UserService {
     //Delete a user
     /**
      * Delete a client from the database.
-     * @param customer A UserEntity with the customer data to delete.
+     * @param user A UserEntity with the data of the client to delete.
      */
     public void deleteUser(UserEntity user) {
         userRepository.delete(user);
+
+        if (creditService.getAllCredits().size() > 0) {
+            creditService.deleted(user);
+        }
     }
 
     //Simulation of a loan
