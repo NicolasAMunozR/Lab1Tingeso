@@ -556,10 +556,20 @@ public class CreditService {
         userService.saveUser(user);
     }
 
+    // Get all credits
+    /**
+     * Method that allows to obtain all the loans.
+     * @return A List with all the loans.
+     */
     public ArrayList<CreditEntity> getAllCredits() {
         return (ArrayList<CreditEntity>) creditRepository.findAll();
     }
 
+    // Delete a credit
+    /**
+     * Method that allows to delete a loan.
+     * @param credit A CreditEntity with the data of the loan to delete.
+     */
     public void deleted(UserEntity user) {
         ArrayList<CreditEntity> credits = (ArrayList<CreditEntity>) creditRepository.findAll();
         for (CreditEntity credit : credits) {
