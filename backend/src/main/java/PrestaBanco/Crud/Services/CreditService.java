@@ -523,7 +523,7 @@ public class CreditService {
         double monthlyCost = averageIncome + lienInsurance + 20000;
         credit.setRemainingMonthlyInstallments((int)monthlyCost);
         credit.setFirstInstallment((int)(monthlyCost + administrationFee));
-        credit.setrequestedAmount((int)(monthlyCost * credit.getLoanTerm() * 12 + administrationFee));
+        credit.setTotalAmount((int)(monthlyCost * credit.getLoanTerm() * 12 + administrationFee));
     }
 
     // Disbursement
