@@ -1,7 +1,6 @@
 package PrestaBanco.Crud.Controllers;
 
 import java.time.LocalDate;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -12,16 +11,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
 import PrestaBanco.Crud.Entities.UserEntity;
 import PrestaBanco.Crud.Services.UserService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
 import java.util.List;
 import java.util.Map;
-
 
 @RestController
 @RequestMapping("/users")
@@ -31,10 +27,9 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    //Get a user
     /**
-     * Controller that allows obtaining a client's data.
-     * @param  identifyingDocument String with the client's identifying document.
+     * Controller that allows obtaining a client by id.
+     * @param id A Long with the client's id to search.
      * @return A UserEntity with the client's data found.
      */
     @GetMapping("/{id}")
@@ -50,7 +45,6 @@ public class UserController {
         }
     }
 
-    //Get all users
     /**
      * Controller that allows obtaining all the clients in the database.
      * @return A List with all the clients found.
@@ -63,7 +57,6 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
-    //Create a new user
     /**
      * Controller that allows creating a new client.
      * @param body A Map with the client's data to save.
@@ -102,7 +95,6 @@ public class UserController {
         }
     }
 
-    //Update a user
     /**
      * Controller that allows updating a client's data.
      * @param body A Map with the client's data to update.
@@ -129,7 +121,6 @@ public class UserController {
         }
     }
 
-    //Delete a user
     /**
      * Controller that allows deleting a client.
      * @param id A Long with the client's id to delete.
@@ -150,7 +141,6 @@ public class UserController {
         }
     }
 
-    //User Mortgage Credit Simulation
     /**
      * Controller that allows simulating a mortgage credit for a client.
      * @param body A Map with the data of the mortgage credit to simulate.
@@ -175,45 +165,48 @@ public class UserController {
         }
     }
 
-    // Deposit into account
     /**
      * Controller that allows depositing money into a client's account.
      * @param id A Long with the client's id to deposit money.
      * @param body A Map with the data of the deposit to make.
      * @return A UserEntity with the client's data updated.
      */
-    @PutMapping("/deposit/{id}")
-    public ResponseEntity<UserEntity> deposit(@PathVariable Long id, @RequestBody Map<String, String> body) {
+    @PutMapping("/deposit")
+    public ResponseEntity<UserEntity> deposit(@RequestParam("userId") Long id, @RequestParam("depositAccount") int depositAccount) {
         try {
+            // The user is searched in the database.
             UserEntity user = userService.findUserById(id);
-            int depositAccount = Integer.parseInt(body.get("depositAccount"));
+            // The deposit is made in the user's account.
             UserEntity userModify = userService.deposit(user, depositAccount);
+            // The user's data is returned.
             return ResponseEntity.ok(userModify);
         } catch (Exception e) {
+            // If there is an error, return null.
             return null;
         }
     }
 
-    // Withdrawal from account
     /**
      * Controller that allows withdrawing money from a client's account.
      * @param id A Long with the client's id to withdraw money.
      * @param body A Map with the data of the withdrawal to make.
      * @return A UserEntity with the client's data updated.
      */
-    @PutMapping("/withdrawal/{id}")
-    public ResponseEntity<UserEntity> withdrawal(@PathVariable Long id, @RequestBody Map<String, String> body) {
+    @PutMapping("/withdrawal")
+    public ResponseEntity<UserEntity> withdrawal(@RequestParam("userId") Long id, @RequestParam("withdrawalAccount") int withdrawalAccount) {
         try {
+            // The user is searched in the database.
             UserEntity user = userService.findUserById(id);
-            int withdrawalAccount = Integer.parseInt(body.get("withdrawalAccount"));
+            // The withdrawal is made in the user's account.
             UserEntity userModify = userService.withdrawal(user, withdrawalAccount);
+            // The user's data is returned.
             return ResponseEntity.ok(userModify);
         } catch (Exception e) {
+            // If there is an error, return null.
             return null;
         }
     }
 
-    //encontrar nombre por id
     /**
      * Controller that allows finding a client's name by id.
      * @param id A Long with the client's id to find the name.

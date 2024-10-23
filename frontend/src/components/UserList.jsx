@@ -58,9 +58,12 @@ const UserList = () => {
     }
   };
 
+  const handleDeposit = (id) => {
+    navigate(`/user/deposit/${id}`);
+  };
 
-  const handleEdit = (id) => {
-    navigate(`/user/edit/${id}`);
+  const handleWithdrawal = (id) => {
+    navigate(`/user/withdraw/${id}`);
   };
 
   return (
@@ -92,6 +95,9 @@ const UserList = () => {
                 Correo
             </TableCell>
             <TableCell align="left" sx={{ fontWeight: "bold" }}>
+                Saldo
+            </TableCell>
+            <TableCell align="left" sx={{ fontWeight: "bold" }}>
               Operaciones
             </TableCell>
           </TableRow>
@@ -105,17 +111,30 @@ const UserList = () => {
               <TableCell align="left">{user.identifyingDocument}</TableCell>
               <TableCell align="left">{user.name}</TableCell>
               <TableCell align="left">{user.email}</TableCell>
+              <TableCell align="left">{user.currentSavingsBalance}</TableCell>
 
               <TableCell>
+
                 <Button
                   variant="contained"
                   color="info"
                   size="small"
-                  onClick={() => handleEdit(user.id)}
+                  onClick={() => handleDeposit(user.id)}
                   style={{ marginLeft: "0.5rem" }}
                   startIcon={<EditIcon />}
                 >
-                  Editar
+                  Deposito
+                </Button>
+
+                <Button
+                  variant="contained"
+                  color="info"
+                  size="small"
+                  onClick={() => handleWithdrawal(user.id)}
+                  style={{ marginLeft: "0.5rem" }}
+                  startIcon={<EditIcon />}
+                >
+                  Retiro
                 </Button>
 
                 <Button

@@ -28,12 +28,20 @@ const simulation = data => {
     return httpClient.post("/users/simulation", data);
 }
 
-const deposit = (id, depositAccount) => {
-    return httpClient.put(`/users/deposit/${id}`, {params: {depositAccount}});
+const deposit = (formData) => {
+    return httpClient.put("/users/deposit", formData,{
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+    });
 }
 
-const withdraw = (id, withdrawAccount) => {
-    return httpClient.put(`/users/withdraw/${id}`, {params: {withdrawAccount}});
+const withdraw = (formData) => {
+    return httpClient.put("/users/withdrawal", formData,{
+        headers: {
+            "Content-Type": "multipart/form-data",
+        },
+    });
 }
 
 const get = id => {

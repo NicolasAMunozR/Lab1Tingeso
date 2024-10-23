@@ -10,6 +10,8 @@ import CreditsList from './components/CreditsList';
 import AddCredit from './components/AddCredit';
 import AddTerms from './components/AddTerms';
 import PreList from './components/PreList';
+import AddWithdra from './components/AddWithdra';
+import AddDeposit from './components/AddDeposit';
 
 function App() {
   return (
@@ -26,6 +28,8 @@ function App() {
                   <Route path="/credit/add/:id" element={<AddCredit />} />
                   <Route path="/credit/addterms/:id" element={<AddTerms />} />
                   <Route path="/credit/pre" element={<PreList />} />
+                  <Route path="/user/withdraw/:id" element={<AddWithdra />} />
+                  <Route path="/user/deposit/:id" element={<AddDeposit />} />
                   <Route path="*" element={<NotFound />} />
               </Routes>
           </div>

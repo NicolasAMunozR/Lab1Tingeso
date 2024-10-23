@@ -2,38 +2,28 @@ package PrestaBanco.Crud.Services;
 
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-
 import java.time.LocalDate;
 import java.util.Map;
 import java.time.Period;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import PrestaBanco.Crud.Entities.CreditEntity;
 import PrestaBanco.Crud.Entities.UserEntity;
 import PrestaBanco.Crud.Repositories.CreditRepository;
-
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 @Service
 public class CreditService {
 
-    @Autowired
-    private CreditRepository creditRepository;
+    private final CreditRepository creditRepository;
+    private final UserService userService;
 
-    @Autowired
-    private UserService userService;
-
-
-    public CreditService() {
-        // Asegúrate de crear una nueva instancia de UserService aquí
-        this.userService = new UserService();  // Inicialización de UserService
+    // Constructor
+    public CreditService(CreditRepository creditRepository, UserService userService) {
+        this.creditRepository = creditRepository;
+        this.userService = userService;
     }
 
-    //Create a new credit
     /**
      * Save a loan in the database.
      * @param credit A CreditEntity with the data of the loan to save.
@@ -43,7 +33,6 @@ public class CreditService {
         return creditRepository.save(credit);
     }
 
-    // Application status
     /**
      * Method that allows to know the status of the loan application.
      * @param credit A CreditEntity with the data of the loan to know the status of the application.
@@ -75,14 +64,12 @@ public class CreditService {
             } else {
                 credit.setApplicationStatus("Pendiente de documentación"); 
             }
-        }
-        else {
+        } else {
             return null;
         }
         return creditRepository.save(credit);
     }
 
-    //Get a credits
     /**
      * Search for a loan in the database.
      * @param userId A Long with the id of the client to search the loan.
@@ -92,29 +79,30 @@ public class CreditService {
         return creditRepository.findById(id).orElse(null);
     }
 
+    /**
+     * Method that allows evaluating a loan.
+     * @param creditFound A CreditEntity with the data of the loan to evaluate.
+     * @return A CreditEntity with the loan evaluated.
+     */
     public CreditEntity evaluateCredit(CreditEntity creditFound) {
         if (R1(creditFound) && R2(creditFound) && R3(creditFound) && R4(creditFound) && R5(creditFound) && R6(creditFound)) {
             String status = R7(creditFound);
             if (status.contains("Aprobado")) {
                 creditFound.setApplicationStatus("Pre-aprobado");
                 return creditRepository.save(creditFound);
-            }
-            else if (status.contains("Revisión")) {
+            } else if (status.contains("Revisión")) {
                 creditFound.setApplicationStatus("En evaluación");
                 return creditRepository.save(creditFound);
-            }
-            else {
+            } else {
                 creditFound.setApplicationStatus("Rechazada");
                 return creditRepository.save(creditFound);
-        }
-        }
-        else {
+            }
+        } else {
             creditFound.setApplicationStatus("Rechazada");
             return creditRepository.save(creditFound);
         }
     }
 
-    // Average income
     /**
      * Method that calculates the average income of a client.
      * @param creditFound A CreditEntity with the data of the client to calculate the average income.
@@ -125,53 +113,40 @@ public class CreditService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         String[] entries = monthlyIncome.split(",");
         Map<LocalDate, Integer> incomePerMonth = new HashMap<>();
-
         for (String entry : entries) {
             String[] parts = entry.split(" ");
             if (parts.length != 2) {
                 System.err.println("Invalid format for entry: " + entry);
-                continue; // Skip malformed entries
+                continue; 
             }
-
-            String dateString = parts[0].trim(); // Eliminar espacios en blanco
+            String dateString = parts[0].trim(); 
             int amount = 0;
             try {
-                amount = Integer.parseInt(parts[1]); // Parse the amount
+                amount = Integer.parseInt(parts[1]); 
             } catch (NumberFormatException e) {
                 System.err.println("Error parsing amount: " + parts[1] + " - " + e.getMessage());
-                continue; // Skip invalid amounts
+                continue; 
             }
-
             try {
-                // Parse the date
                 LocalDate date = LocalDate.parse(dateString, formatter);
-                // Store the date and amount in the map
                 incomePerMonth.put(date, amount);
             } catch (DateTimeParseException e) {
                 System.err.println("Error parsing date: " + dateString + " - " + e.getMessage());
             }
         }
-
         LocalDate currentDate = LocalDate.now();
         int totalIncome = 0;
         int countedMonths = 0;
-
         for (Map.Entry<LocalDate, Integer> entry : incomePerMonth.entrySet()) {
             LocalDate date = entry.getKey();
-
-            // Check if the date is within the last 12 months
             if (!date.isBefore(currentDate.minusMonths(12))) {
                 totalIncome += entry.getValue();
                 countedMonths++;
             }
         }
-
-        // Avoid division by zero
         return countedMonths > 0 ? (double) totalIncome / countedMonths : 0;
     }
 
-
-    // Evaluate credit
     /**
      * Method that allows evaluating a loan.
      * @param credit A CreditEntity with the data of the loan to evaluate.
@@ -190,7 +165,6 @@ public class CreditService {
         return false;
     }
 
-    // Evaluate credit
     /**
      * Method that allows evaluating a loan.
      * @param credit A CreditEntity with the data of the loan to evaluate.
@@ -200,8 +174,6 @@ public class CreditService {
         return creditFound.getCreditsHistory() != null ? creditFound.getCreditsHistory() : false;
     }
 
-
-    // Evaluate credit
     /**
      * Method that allows evaluating a loan.
      * @param credit A CreditEntity with the data of the loan to evaluate.
@@ -216,7 +188,6 @@ public class CreditService {
         return false;
     }
 
-    // Evaluate credit
     /**
      * Method that allows evaluating a loan.
      * @param credit A CreditEntity with the data of the loan to evaluate.
@@ -226,9 +197,7 @@ public class CreditService {
         String debt = creditFound.getMonthlyDebt();
         if(debt != null){
             String[] parts = debt.split(",");
-
             int sum = 0;
-
             for (String part : parts) {
                 sum += Integer.parseInt(part);
             }
@@ -243,7 +212,6 @@ public class CreditService {
         }
     }
 
-    // Evaluate credit
     /**
      * Method that allows evaluating a loan.
      * @param credit A CreditEntity with the data of the loan to evaluate.
@@ -281,7 +249,6 @@ public class CreditService {
         return false;
     }
 
-    // Evaluate credit
     /**
      * Method that allows evaluating a loan.
      * @param credit A CreditEntity with the data of the loan to evaluate.
@@ -297,7 +264,6 @@ public class CreditService {
         return true;
     }
 
-    // Evaluate credit
     /**
      * Method that allows evaluating a loan.
      * @param credit A CreditEntity with the data of the loan to evaluate.
@@ -331,7 +297,6 @@ public class CreditService {
         }
     }
 
-    // Evaluate savings account
     /**
      * Method that allows evaluating a saving.
      * @param credit A CreditEntity with the data of the saving to evaluate.
@@ -344,10 +309,9 @@ public class CreditService {
         if (currentSavingsBalance>=(0.1*requestedAmount)) {
             return true;
         }
-        return true;
+        return false;
     }
 
-    // Evaluate savings account
     /**
      * Method that allows evaluating a saving.
      * @param credit A CreditEntity with the data of the saving to evaluate.
@@ -356,41 +320,26 @@ public class CreditService {
     public Boolean R72(CreditEntity creditFound) {
         UserEntity user = userService.findById(creditFound.getUserId());
         String savingsAccount = user.getSavingsAccountHistory();
-
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         String[] entries = savingsAccount.split(",");
-        
          LocalDate currentDate = LocalDate.now();
-
-         
          boolean foundValidEntry = false;
          int previousBalance = 0;
- 
-       
          boolean noSignificantWithdrawals = true;
- 
          for (String entry : entries) {
              String[] parts = entry.split(" ");
              LocalDate date = LocalDate.parse(parts[0], formatter);
              int currentBalance = Integer.parseInt(parts[1]);
- 
-
              if (!date.isBefore(currentDate.minusMonths(12))) {
                  if (!foundValidEntry) {
-                    
                      previousBalance = currentBalance;
                      foundValidEntry = true;
                  } else {
-                   
                      double threshold = previousBalance * 0.5;
- 
-                    
                      if (currentBalance < threshold) {
                          noSignificantWithdrawals = false;
                          break;  
                      }
- 
-                   
                      previousBalance = currentBalance;
                  }
              }
@@ -405,7 +354,6 @@ public class CreditService {
          }
     }
 
-    // Evaluate savings account
     /**
      * Method that allows evaluating a saving.
      * @param credit A CreditEntity with the data of the saving to evaluate.
@@ -415,36 +363,28 @@ public class CreditService {
         UserEntity user = userService.findById(creditFound.getUserId());
         String depositAccount = user.getDepositAccount();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
         String[] entries = depositAccount.split(",");
         LocalDate currentDate = LocalDate.now();
         double totalDeposits = 0;
         int depositCount = 0;
-
         for (String entry : entries) {
             String[] parts = entry.split(" ");
             LocalDate depositDate = LocalDate.parse(parts[0], formatter);
             int amount = Integer.parseInt(parts[1]);
-
             if (!depositDate.isBefore(currentDate.minusMonths(12))) {
                 totalDeposits += amount;
                 depositCount++;
             }
         }
-
         double minimumRequiredDeposit = 0.05 * averageIncome(creditFound);
-
-        boolean areDepositsRegular = depositCount > 0 && 
-                                     (depositCount >= 12 || (depositCount >= 3 && totalDeposits >= minimumRequiredDeposit));
-
+        boolean areDepositsRegular = depositCount > 0 && (depositCount >= 12 || (depositCount >= 3 && totalDeposits >= minimumRequiredDeposit));
         if (areDepositsRegular && totalDeposits >= minimumRequiredDeposit) {
             return true;
         } else {
             return false;
         }
     }
-
-    // Evaluate savings account
+    
     /**
      * Method that allows evaluating a saving.
      * @param credit A CreditEntity with the data of the saving to evaluate.
@@ -464,7 +404,6 @@ public class CreditService {
         return false;
     }
 
-    // Evaluate savings account
     /**
      * Method that allows evaluating a saving.
      * @param credit A CreditEntity with the data of the saving to evaluate.
@@ -474,36 +413,27 @@ public class CreditService {
         UserEntity user = userService.findById(creditFound.getUserId());
         String withdrawalAccount = user.getWithdrawalAccount();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
         String[] entries = withdrawalAccount.split(",");
-
         LocalDate currentDate = LocalDate.now();
-
         boolean noLargeWithdrawals = true;
         int previousBalance = 0;
-
         for (String entry : entries) {
             String[] parts = entry.split(" ");
             LocalDate transactionDate = LocalDate.parse(parts[0], formatter);
             int currentBalance = Integer.parseInt(parts[1]);
-
             if (!transactionDate.isBefore(currentDate.minusMonths(6))) {
-
                 if (previousBalance == 0) {
                     previousBalance = currentBalance;
                 } else {
                     double threshold = previousBalance * 0.3;
-
                     if (previousBalance - currentBalance > threshold) {
                         noLargeWithdrawals = false;
                         break;  
                     }
-
                     previousBalance = currentBalance;
                 }
             }
         }
-
         if (noLargeWithdrawals) {
             return true;
         } else {
@@ -511,7 +441,6 @@ public class CreditService {
         }
     }
 
-    // Total cost
     /**
      * Method that calculates the total cost of a loan.
      * @param credit A CreditEntity with the data of the loan to calculate the total cost.
@@ -526,7 +455,6 @@ public class CreditService {
         credit.setTotalAmount((int)(monthlyCost * credit.getLoanTerm() * 12 + administrationFee));
     }
 
-    // Disbursement
     /**
      * Method that allows to make a disbursement.
      * @param credit A CreditEntity with the data of the loan to disburse.
@@ -556,7 +484,6 @@ public class CreditService {
         userService.saveUser(user);
     }
 
-    // Get all credits
     /**
      * Method that allows to obtain all the loans.
      * @return A List with all the loans.
@@ -565,7 +492,6 @@ public class CreditService {
         return (ArrayList<CreditEntity>) creditRepository.findAll();
     }
 
-    // Delete a credit
     /**
      * Method that allows to delete a loan.
      * @param credit A CreditEntity with the data of the loan to delete.
@@ -578,5 +504,4 @@ public class CreditService {
             }
         }
     }
-
 }

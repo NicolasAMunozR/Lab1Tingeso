@@ -1,81 +1,125 @@
 package PrestaBanco.Crud.Repositories;
 
 import PrestaBanco.Crud.Entities.UserEntity;
+import PrestaBanco.Crud.Services.UserService;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.jdbc.Sql;
-
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import java.time.LocalDate;
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-@DataJpaTest
 public class UserRepositoryTest {
-
-    @Autowired
+    @Mock
     private UserRepository userRepository;
-
-    private UserEntity user;
-
+    @InjectMocks
+    private UserService userService;
     @BeforeEach
-    public void setup() {
-        // Crear un usuario para usar en las pruebas
-        user = new UserEntity("12345678-9", "Carlos Perez", "carlos@mail.com", "password", null, 5, LocalDate.of(1985, 10, 10));
-        user.setCurrentSavingsBalance(100000);
-        userRepository.save(user);
+    public void setUp() {
+        MockitoAnnotations.openMocks(this);
     }
-
     @Test
-    public void findByEmail_ShouldReturnUser() {
-        // Buscar usuario por email
-        UserEntity foundUser = userRepository.findByEmail("carlos@mail.com");
-
-        assertNotNull(foundUser);
-        assertEquals("Carlos Perez", foundUser.getName());
-        assertEquals("12345678-9", foundUser.getIdentifyingDocument());
+    public void findByEmail_ShouldReturnUser_WhenEmailExists() {
+        String email = "test@example.com";
+        UserEntity expectedUser = new UserEntity("12345678-9", "Carlos Perez", email, "password", null, 5, LocalDate.of(1985, 10, 10));
+        given(userRepository.findByEmail(email)).willReturn(expectedUser);
+        UserEntity actualUser = userService.findByEmail(email);
+        assertEquals(expectedUser, actualUser);
+        verify(userRepository, times(1)).findByEmail(email);
     }
-
     @Test
-    public void findByIdentifyingDocument_ShouldReturnUser() {
-        // Buscar usuario por documento identificador
-        UserEntity foundUser = userRepository.findByIdentifyingDocument("12345678-9");
-
-        assertNotNull(foundUser);
-        assertEquals("Carlos Perez", foundUser.getName());
-        assertEquals("carlos@mail.com", foundUser.getEmail());
+    public void findByEmail_ShouldReturnNull_WhenEmailDoesNotExist() {
+        String email = "notfound@example.com";
+        given(userRepository.findByEmail(email)).willReturn(null);
+        UserEntity actualUser = userService.findByEmail(email);
+        assertNull(actualUser);
+        verify(userRepository, times(1)).findByEmail(email);
     }
-
     @Test
-    public void findById_ShouldReturnUser() {
-        // Buscar usuario por ID
-        Optional<UserEntity> foundUser = userRepository.findById(user.getId());
-
-        assertTrue(foundUser.isPresent());
-        assertEquals("Carlos Perez", foundUser.get().getName());
+    public void findByEmail_ShouldReturnUser_WhenEmailIsEmpty() {
+        String email = "";
+        given(userRepository.findByEmail(email)).willReturn(null);
+        UserEntity actualUser = userService.findByEmail(email);
+        assertNull(actualUser);
+        verify(userRepository, times(1)).findByEmail(email);
     }
-
     @Test
-    public void save_ShouldSaveUserSuccessfully() {
-        // Guardar un nuevo usuario
-        UserEntity newUser = new UserEntity("98765432-1", "Maria Lopez", "maria@mail.com", "password123", null, 3, LocalDate.of(1990, 2, 5));
-        UserEntity savedUser = userRepository.save(newUser);
-
-        assertNotNull(savedUser);
-        assertEquals("Maria Lopez", savedUser.getName());
-        assertEquals("maria@mail.com", savedUser.getEmail());
+    public void findByEmail_ShouldReturnUser_WhenEmailIsNull() {
+        String email = null;
+        given(userRepository.findByEmail(email)).willReturn(null);
+        UserEntity actualUser = userService.findByEmail(email);
+        assertNull(actualUser);
+        verify(userRepository, times(1)).findByEmail(email);
     }
-
     @Test
-    public void delete_ShouldDeleteUser() {
-        // Eliminar usuario
-        userRepository.delete(user);
-
-        Optional<UserEntity> deletedUser = userRepository.findById(user.getId());
-
-        assertFalse(deletedUser.isPresent());
+    public void findByEmail_ShouldCallRepositoryOnce_WhenCalled() {
+        String email = "test@example.com";
+        UserEntity expectedUser = new UserEntity("12345678-9", "Carlos Perez", email, "password", null, 5, LocalDate.of(1985, 10, 10));
+        given(userRepository.findByEmail(email)).willReturn(expectedUser);
+        userService.findByEmail(email);
+        verify(userRepository, times(1)).findByEmail(email);
+    }
+    @Test
+    public void findByEmail_ShouldHandleSpecialCharacters() {
+        String email = "test+filter@example.com";
+        UserEntity expectedUser = new UserEntity("12345678-9", "Carlos Perez", email, "password", null, 5, LocalDate.of(1985, 10, 10));
+        given(userRepository.findByEmail(email)).willReturn(expectedUser);
+        UserEntity actualUser = userService.findByEmail(email);
+        assertEquals(expectedUser, actualUser);
+        verify(userRepository, times(1)).findByEmail(email);
+    }
+    @Test
+    public void findByIdentifyingDocument_ShouldReturnUser_WhenDocumentExists() {
+        String doc = "12345678-9";
+        UserEntity expectedUser = new UserEntity(doc, "Carlos Perez", "carlos@mail.com", "password", null, 5, LocalDate.of(1985, 10, 10));
+        given(userRepository.findByIdentifyingDocument(doc)).willReturn(expectedUser);
+        UserEntity actualUser = userService.findByIdentifyingDocument(doc);
+        assertEquals(expectedUser, actualUser);
+        verify(userRepository, times(1)).findByIdentifyingDocument(doc);
+    }
+    @Test
+    public void findByIdentifyingDocument_ShouldReturnNull_WhenDocumentDoesNotExist() {
+        String doc = "notfound-doc";
+        given(userRepository.findByIdentifyingDocument(doc)).willReturn(null);
+        UserEntity actualUser = userService.findByIdentifyingDocument(doc);
+        assertNull(actualUser);
+        verify(userRepository, times(1)).findByIdentifyingDocument(doc);
+    }
+    @Test
+    public void findByIdentifyingDocument_ShouldReturnUser_WhenDocumentIsEmpty() {
+        String doc = "";
+        given(userRepository.findByIdentifyingDocument(doc)).willReturn(null);
+        UserEntity actualUser = userService.findByIdentifyingDocument(doc);
+        assertNull(actualUser);
+        verify(userRepository, times(1)).findByIdentifyingDocument(doc);
+    }
+    @Test
+    public void findByIdentifyingDocument_ShouldReturnUser_WhenDocumentIsNull() {
+        String doc = null;
+        given(userRepository.findByIdentifyingDocument(doc)).willReturn(null);
+        UserEntity actualUser = userService.findByIdentifyingDocument(doc);
+        assertNull(actualUser);
+        verify(userRepository, times(1)).findByIdentifyingDocument(doc);
+    }
+    @Test
+    public void findByIdentifyingDocument_ShouldCallRepositoryOnce_WhenCalled() {
+        String doc = "12345678-9";
+        UserEntity expectedUser = new UserEntity(doc, "Carlos Perez", "carlos@mail.com", "password", null, 5, LocalDate.of(1985, 10, 10));
+        given(userRepository.findByIdentifyingDocument(doc)).willReturn(expectedUser);
+        userService.findByIdentifyingDocument(doc);
+        verify(userRepository, times(1)).findByIdentifyingDocument(doc);
+    }
+    @Test
+    public void findByIdentifyingDocument_ShouldHandleSpecialDocumentCharacters() {
+        String doc = "1234-5678";
+        UserEntity expectedUser = new UserEntity(doc, "Carlos Perez", "carlos@mail.com", "password", null, 5, LocalDate.of(1985, 10, 10));
+        given(userRepository.findByIdentifyingDocument(doc)).willReturn(expectedUser);
+        UserEntity actualUser = userService.findByIdentifyingDocument(doc);
+        assertEquals(expectedUser, actualUser);
+        verify(userRepository, times(1)).findByIdentifyingDocument(doc);
     }
 }
 

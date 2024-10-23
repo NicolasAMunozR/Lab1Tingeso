@@ -2,11 +2,9 @@ package PrestaBanco.Crud.Services;
 
 import java.util.ArrayList;
 import java.time.LocalDate;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-
 import PrestaBanco.Crud.Repositories.UserRepository;
 import PrestaBanco.Crud.Entities.UserEntity;
 
@@ -20,7 +18,6 @@ public class UserService {
     @Lazy
     private CreditService creditService;
 
-    //Create a new user
     /**
      * Save a client in the database.
      * @param user A UserEntity with the data of the client to save.
@@ -30,7 +27,6 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    //Read a user
     /**
      * Search for a client in the database.
      * @param email A String with the email of the client to search.
@@ -40,7 +36,6 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
-    //Search for a user by id
     /**
      * Search for a client in the database.
      * @param id A Long with the id of the client to search.
@@ -50,7 +45,6 @@ public class UserService {
         return userRepository.findById(id).orElse(null);
     }
 
-    //Delete a user
     /**
      * Delete a client from the database.
      * @param user A UserEntity with the data of the client to delete.
@@ -63,7 +57,6 @@ public class UserService {
         }
     }
 
-    //Simulation of a loan
     /**
      * Simulate a loan.
      * @param amount An int with the amount of the loan.
@@ -74,17 +67,15 @@ public class UserService {
      */
     public int simulation(int amount, int term, double interestRate) {
         if (term == 0) {
-            return amount;  // Si el término es 0 años, el pago mensual es el monto total.
+            return amount; 
         }
-
-        double monthlyInterestRate = interestRate / 100 / 12;  // Convertir la tasa anual en mensual
-        int termInMonths = term * 12;  // Convertir los años en meses
+        double monthlyInterestRate = interestRate / 100 / 12; 
+        int termInMonths = term * 12; 
         double monthlyPayment = amount * (monthlyInterestRate * Math.pow(1 + monthlyInterestRate, termInMonths)) /
                 (Math.pow(1 + monthlyInterestRate, termInMonths) - 1);
-        return (int) Math.round(monthlyPayment);  // Redondear a entero
+        return (int) Math.round(monthlyPayment); 
     }
 
-    //List all users
     /**
      * List all clients in the database.
      * @return An ArrayList with all the clients found.
@@ -93,7 +84,6 @@ public class UserService {
         return (ArrayList<UserEntity>) userRepository.findAll();  
     }
 
-    //Search for a user by email
     /**
      * Search for a client in the database.
      * @param email A String with the email of the client to search.
@@ -103,7 +93,6 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
-    //Search for a user by identifying document
     /**
      * Search for a client in the database.
      * @param identifyingDocument A String with the identifying document of the client to search.
@@ -113,7 +102,6 @@ public class UserService {
         return userRepository.findByIdentifyingDocument(identifyingDocument);
     }
 
-    //Search for a user by id
     /**
      * Search for a client in the database.
      * @param id A Long with the id of the client to search.
@@ -123,7 +111,6 @@ public class UserService {
         return userRepository.findById(id).orElse(null);
     }
 
-    //Deposit into account
     /**
      * Deposit money into the account.
      * @param user A UserEntity with the user data.
@@ -133,34 +120,26 @@ public class UserService {
     public UserEntity deposit(UserEntity user, int depositAccount) {
         String deposit = String.valueOf(depositAccount);
         String dateDeposit = LocalDate.now().toString();
-
-        // Verificar si depositAccount es null y asignarle una cadena vacía
         String depositInitial = user.getDepositAccount() != null ? user.getDepositAccount() : "";
-
         if (depositInitial.length() <= 0) {
             depositInitial = dateDeposit + " " + deposit;
         } else {
             depositInitial = depositInitial + "," + dateDeposit + " " + deposit;
         }
-
         int currentSavingsBalance = user.getCurrentSavingsBalance();
         currentSavingsBalance += depositAccount;
-
         String savingsAccountHistory = user.getSavingsAccountHistory() != null ? user.getSavingsAccountHistory() : "";
         if (savingsAccountHistory.length() <= 0) {
             savingsAccountHistory = dateDeposit + " " + String.valueOf(currentSavingsBalance);
         } else {
             savingsAccountHistory = savingsAccountHistory + "," + dateDeposit + " " + String.valueOf(currentSavingsBalance);
         }
-
         user.setSavingsAccountHistory(savingsAccountHistory);
         user.setCurrentSavingsBalance(currentSavingsBalance);
         user.setDepositAccount(depositInitial);
-
         return userRepository.save(user);
     }
 
-    //Withdrawal from account
     /**
      * Withdraw money from the account.
      * @param user A UserEntity with the user data.
@@ -170,30 +149,23 @@ public class UserService {
     public UserEntity withdrawal(UserEntity user, int withdrawalAccount) {
         String withdrawal = String.valueOf(withdrawalAccount);
         String dateWithdrawal = LocalDate.now().toString();
-
-        // Verifica si withdrawalAccount es null y lo inicializa
         String withdrawalInitial = user.getWithdrawalAccount() != null ? user.getWithdrawalAccount() : "";
-
         if (withdrawalInitial.length() <= 0) {
             withdrawalInitial = dateWithdrawal + " " + withdrawal;
         } else {
             withdrawalInitial = withdrawalInitial + "," + dateWithdrawal + " " + withdrawal;
         }
-
         int currentSavingsBalance = user.getCurrentSavingsBalance();
         currentSavingsBalance -= withdrawalAccount;
-
         String savingsAccountHistory = user.getSavingsAccountHistory() != null ? user.getSavingsAccountHistory() : "";
         if (savingsAccountHistory.length() <= 0) {
             savingsAccountHistory = dateWithdrawal + " " + String.valueOf(currentSavingsBalance);
         } else {
             savingsAccountHistory = savingsAccountHistory + "," + dateWithdrawal + " " + String.valueOf(currentSavingsBalance);
         }
-
         user.setSavingsAccountHistory(savingsAccountHistory);
         user.setCurrentSavingsBalance(currentSavingsBalance);
         user.setWithdrawalAccount(withdrawalInitial);
-
         return userRepository.save(user);
     }
 }
